@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Default brand colors — overridden at runtime from Admin > Settings
+   (see SiteSettingsContext, which sets these on document.documentElement). */
+:root {
+  --color-primary: #003580;
+  --color-primary-light: #0071c2;
+  --color-primary-dark: #00224f;
+  --color-accent: #febb02;
+  --color-accent-dark: #e6a800;
+}
+
+html { scroll-behavior: smooth; }
+body { @apply bg-surface text-slate-800 font-sans; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c7d2e0; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #9fb3cc; }
+
+.leaflet-container { width: 100%; height: 100%; border-radius: 0.75rem; }
+
+/* Fix: the react-datepicker calendar popup was rendering behind page
+   sections that declare their own z-index (e.g. the "Explore by region"
+   cards, which overlap the hero with a negative margin). Without this,
+   the calendar opens but is visually hidden, making dates look unclickable. */
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+.react-datepicker {
+  font-family: inherit !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+.react-datepicker__header {
+  background-color: var(--color-primary) !important;
+  border-bottom: none !important;
+}
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: #fff !important;
+}
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  background-color: var(--color-primary) !important;
+  color: #fff !important;
+}
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--color-primary-light) !important;
+  color: #fff !important;
+}
+
+/* Owner room calendar: highlight days occupied by a guest booking vs a
+   manually-created owner block (see OwnerRoomCalendar.jsx). */
+.react-datepicker__day.day-guest-booked {
+  background-color: #3b82f6 !important;
+  color: #fff !important;
+  border-radius: 999px;
+}
+.react-datepicker__day.day-manually-blocked {
+  background-color: #ef4444 !important;
+  color: #fff !important;
+  border-radius: 999px;
+}
+
+/* Map price markers: a small solid pill with a pointed tail so the exact
+   coordinate is unambiguous, sized to stay legible even when several
+   properties sit close together (uncrowded further by clustering below). */
+.price-marker {
+  position: relative;
+}
+.price-marker-pill {
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  border: 2px solid #fff;
+  transform: translate(-50%, -100%);
+  position: absolute;
+  left: 0;
+  top: -6px;
+}
+.price-marker-tail {
+  position: absolute;
+  left: 0;
+  top: -6px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 2px;
+  transform: translate(-50%, 0) rotate(45deg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+/* Cluster bubbles: shown instead of individual pins when several properties
+   sit close together at the current zoom level (e.g. the southern coast). */
+.cluster-marker-pill {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.btn-primary {
+  @apply bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-accent {
+  @apply bg-accent hover:bg-accent-dark text-primary-dark font-bold px-5 py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-50;
+}
+.btn-outline {
+  @apply border border-primary text-primary hover:bg-primary hover:text-white font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150;
+}
+.input-field {
+  @apply w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-light focus:border-transparent transition;
+}
+.card {
+  @apply bg-white rounded-xl shadow-card hover:shadow-cardHover transition-shadow duration-200;
+}
+.chip {
+  @apply inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full bg-slate-100 text-slate-700;
+}
