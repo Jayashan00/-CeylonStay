@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
+import GoogleSignInButton from '../../components/GoogleSignInButton.jsx'
+import FacebookSignInButton from '../../components/FacebookSignInButton.jsx'
 
 export default function Register() {
-  const { register } = useAuth()
+  const { register, loginWithGoogle, loginWithFacebook } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const defaultRole = searchParams.get('role') === 'HOTEL_OWNER' ? 'HOTEL_OWNER' : 'GUEST'
@@ -15,6 +17,30 @@ export default function Register() {
   const [role, setRole] = useState(defaultRole)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleError, setGoogleError] = useState('')
+  const [facebookError, setFacebookError] = useState('')
+
+  async function handleGoogleCredential(idToken) {
+    setGoogleError('')
+    try {
+      const data = await loginWithGoogle(idToken)
+      if (data.role === 'HOTEL_OWNER') navigate('/owner')
+      else navigate('/')
+    } catch (err) {
+      setGoogleError(err.response?.data?.message || 'Could not sign up with Google. Please try again.')
+    }
+  }
+
+  async function handleFacebookToken(accessToken) {
+    setFacebookError('')
+    try {
+      const data = await loginWithFacebook(accessToken)
+      if (data.role === 'HOTEL_OWNER') navigate('/owner')
+      else navigate('/')
+    } catch (err) {
+      setFacebookError(err.response?.data?.message || 'Could not sign up with Facebook. Please try again.')
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -54,6 +80,20 @@ export default function Register() {
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <button disabled={loading} className="btn-primary w-full">{loading ? 'Creating account...' : 'Create account'}</button>
         </form>
+
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-slate-200" />
+          <span className="text-xs text-slate-400">OR</span>
+          <div className="flex-1 h-px bg-slate-200" />
+        </div>
+
+        <div className="space-y-2">
+          <GoogleSignInButton onCredential={handleGoogleCredential} text="signup_with" />
+          <FacebookSignInButton onAccessToken={handleFacebookToken} label="Sign up with Facebook" />
+        </div>
+        {googleError && <p className="text-red-600 text-sm text-center mt-2">{googleError}</p>}
+        {facebookError && <p className="text-red-600 text-sm text-center mt-2">{facebookError}</p>}
+        <p className="text-xs text-slate-400 text-center mt-2">Signing up with Google always creates a guest account — switch to a hotel owner account afterward from your profile if needed.</p>
 
         <p className="text-sm text-slate-500 mt-6 text-center">
           Already have an account? <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>

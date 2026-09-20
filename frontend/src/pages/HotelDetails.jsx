@@ -7,6 +7,8 @@ import SriLankaMap from '../components/SriLankaMap.jsx'
 import DateRangeField from '../components/DateRangeField.jsx'
 import Loader from '../components/Loader.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import BookingAuthGate from '../components/BookingAuthGate.jsx'
+import { toLocalDateString, parseLocalDate } from '../utils/dateUtils.js'
 
 export default function HotelDetails() {
   const { id } = useParams()
@@ -30,13 +32,9 @@ export default function HotelDetails() {
   const [blockedIntervals, setBlockedIntervals] = useState([])
   const [loadingBlockedDates, setLoadingBlockedDates] = useState(false)
 
-  const [selectedRoom, setSelectedRoom] = useState(null)
-  const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState('')
-  const [guestFullName, setGuestFullName] = useState(user?.fullName || '')
-  const [guestEmail, setGuestEmail] = useState(user?.email || '')
-  const [guestPhone, setGuestPhone] = useState('')
-  const [specialRequests, setSpecialRequests] = useState('')
+  const [showAuthGate, setShowAuthGate] = useState(false)
+  const [pendingRoom, setPendingRoom] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -63,7 +61,7 @@ export default function HotelDetails() {
     api.get(`/rooms/${selectedRoomId}/blocked-dates`, { params: { daysAhead: 365 } })
       .then((res) => {
         if (cancelled) return
-        const intervals = res.data.map((r) => ({ start: new Date(r.start), end: new Date(r.end) }))
+        const intervals = res.data.map((r) => ({ start: parseLocalDate(r.start), end: parseLocalDate(r.end) }))
         setBlockedIntervals(intervals)
       })
       .catch(() => { if (!cancelled) setBlockedIntervals([]) })
@@ -87,8 +85,8 @@ export default function HotelDetails() {
     }
     let cancelled = false
     setCheckingAvailability(true)
-    const ci = checkIn.toISOString().slice(0, 10)
-    const co = checkOut.toISOString().slice(0, 10)
+    const ci = toLocalDateString(checkIn)
+    const co = toLocalDateString(checkOut)
 
     Promise.all(
       rooms.map((room) =>
@@ -108,18 +106,14 @@ export default function HotelDetails() {
     return () => { cancelled = true }
   }, [checkIn, checkOut, rooms])
 
-  async function handleBook(room) {
+  // Step 1 of the booking flow: once dates + an available room are picked,
+  // move on to Step 2 (guest details) rather than booking immediately —
+  // this matches the familiar "search → details → review" flow guests
+  // already know from sites like Booking.com.
+  function handleReserveClick(room) {
     setBookingError('')
-    if (!user) {
-      navigate('/login', { state: { from: `/hotels/${id}` } })
-      return
-    }
     if (!checkIn || !checkOut) {
       setBookingError('Please select your check-in and check-out dates.')
-      return
-    }
-    if (!guestFullName || !guestEmail) {
-      setBookingError('Please provide guest name and email.')
       return
     }
     const availability = availabilityByRoom[room.id]
@@ -127,27 +121,39 @@ export default function HotelDetails() {
       setBookingError(availability.message || 'This room is not available for the selected dates.')
       return
     }
-    setBookingLoading(true)
-    try {
-      const { data } = await api.post('/bookings', {
-        hotelId: id,
-        roomId: room.id,
-        checkIn: checkIn.toISOString().slice(0, 10),
-        checkOut: checkOut.toISOString().slice(0, 10),
-        adults,
-        children,
-        numberOfRooms: 1,
-        guestFullName,
-        guestEmail,
-        guestPhone,
-        specialRequests,
-      })
-      navigate(`/booking-confirmation/${data.id}`)
-    } catch (err) {
-      setBookingError(err.response?.data?.message || 'Could not complete booking. Please try again.')
-    } finally {
-      setBookingLoading(false)
+
+    if (!user) {
+      // Not logged in yet — show the inline sign-in/create-account gate
+      // right here instead of navigating away. Once they sign in (email or
+      // Google), proceedToBooking() runs automatically for this same room.
+      setPendingRoom(room)
+      setShowAuthGate(true)
+      return
     }
+
+    proceedToBooking(room)
+  }
+
+  function proceedToBooking(room) {
+    const draft = {
+      hotelId: id,
+      hotelName: hotel.name,
+      hotelImage: hotel.images?.[0] || '',
+      roomId: room.id,
+      roomType: room.roomType,
+      pricePerNight: room.pricePerNight,
+      breakfastIncluded: room.breakfastIncluded,
+      maxOccupancy: room.maxOccupancy,
+      checkIn: toLocalDateString(checkIn),
+      checkOut: toLocalDateString(checkOut),
+      adults,
+      children,
+      numberOfRooms: 1,
+    }
+    // Saved to sessionStorage too (not just router state) so refreshing the
+    // next couple of pages doesn't lose everything the guest already picked.
+    sessionStorage.setItem('ceylonstay_booking_draft', JSON.stringify(draft))
+    navigate(`/book/${room.id}`, { state: draft })
   }
 
   if (loading) return <Loader />
@@ -248,13 +254,6 @@ export default function HotelDetails() {
               </div>
             </div>
 
-            <div className="mt-4 space-y-1">
-              <input placeholder="Full name" value={guestFullName} onChange={(e) => setGuestFullName(e.target.value)} className="input-field text-sm" />
-              <input placeholder="Email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} className="input-field text-sm" />
-              <input placeholder="Phone (optional)" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} className="input-field text-sm" />
-              <textarea placeholder="Special requests (optional)" value={specialRequests} onChange={(e) => setSpecialRequests(e.target.value)} className="input-field text-sm" rows={2} />
-            </div>
-
             {bookingError && <p className="text-red-600 text-xs mt-2">{bookingError}</p>}
             {checkIn && checkOut && checkingAvailability && (
               <p className="text-xs text-slate-400 mt-2">Checking availability...</p>
@@ -300,11 +299,11 @@ export default function HotelDetails() {
                       </p>
                     )}
                     <button
-                      disabled={bookingLoading || isUnavailable}
-                      onClick={(e) => { e.stopPropagation(); handleBook(room) }}
+                      disabled={isUnavailable}
+                      onClick={(e) => { e.stopPropagation(); handleReserveClick(room) }}
                       className="btn-primary w-full mt-2 text-sm py-2"
                     >
-                      {bookingLoading ? 'Booking...' : isUnavailable ? 'Not available' : 'Reserve'}
+                      {isUnavailable ? 'Not available' : 'Reserve'}
                     </button>
                   </div>
                 )
@@ -314,6 +313,18 @@ export default function HotelDetails() {
           </div>
         </div>
       </div>
+
+      {showAuthGate && pendingRoom && (
+        <BookingAuthGate
+          onClose={() => { setShowAuthGate(false); setPendingRoom(null) }}
+          onSuccess={() => {
+            setShowAuthGate(false)
+            const room = pendingRoom
+            setPendingRoom(null)
+            proceedToBooking(room)
+          }}
+        />
+      )}
     </div>
   )
 }

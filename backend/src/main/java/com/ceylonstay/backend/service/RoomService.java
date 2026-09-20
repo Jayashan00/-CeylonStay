@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +53,7 @@ public class RoomService {
                 .breakfastIncluded(req.isBreakfastIncluded())
                 .freeCancellation(req.isFreeCancellation())
                 .active(true)
+                .icalExportToken(UUID.randomUUID().toString())
                 .build();
         Room saved = roomRepository.save(room);
         hotelService.recalculateLowestPrice(hotelId);
@@ -85,5 +87,18 @@ public class RoomService {
         assertOwnership(hotel, requesterId, isAdmin);
         roomRepository.delete(room);
         hotelService.recalculateLowestPrice(hotel.getId());
+    }
+
+    /**
+     * Returns this room's public iCal export URL, generating and persisting
+     * the token first if this room was created before the channel-sync
+     * feature existed.
+     */
+    public String getOrCreateExportUrl(Room room, String baseUrl) {
+        if (room.getIcalExportToken() == null || room.getIcalExportToken().isBlank()) {
+            room.setIcalExportToken(UUID.randomUUID().toString());
+            roomRepository.save(room);
+        }
+        return baseUrl + "/api/ical/" + room.getId() + "/" + room.getIcalExportToken() + ".ics";
     }
 }

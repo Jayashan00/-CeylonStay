@@ -1,15 +1,39 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
+import GoogleSignInButton from '../../components/GoogleSignInButton.jsx'
+import FacebookSignInButton from '../../components/FacebookSignInButton.jsx'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, loginWithGoogle, loginWithFacebook } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleError, setGoogleError] = useState('')
+  const [facebookError, setFacebookError] = useState('')
+
+  async function handleGoogleCredential(idToken) {
+    setGoogleError('')
+    try {
+      const data = await loginWithGoogle(idToken)
+      redirectByRole(data.role)
+    } catch (err) {
+      setGoogleError(err.response?.data?.message || 'Could not sign in with Google. Please try again.')
+    }
+  }
+
+  async function handleFacebookToken(accessToken) {
+    setFacebookError('')
+    try {
+      const data = await loginWithFacebook(accessToken)
+      redirectByRole(data.role)
+    } catch (err) {
+      setFacebookError(err.response?.data?.message || 'Could not sign in with Facebook. Please try again.')
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -29,8 +53,9 @@ export default function Login() {
     const from = location.state?.from
     if (from) return navigate(from)
     if (role === 'ADMIN') return navigate('/admin')
+    if (role === 'REGION_ADMIN') return navigate('/admin/hotels')
     if (role === 'HOTEL_OWNER') return navigate('/owner')
-    return navigate('/my-bookings')
+    return navigate('/') // guests land on the homepage, not a dashboard
   }
 
   return (
@@ -45,6 +70,19 @@ export default function Login() {
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <button disabled={loading} className="btn-primary w-full">{loading ? 'Signing in...' : 'Sign in'}</button>
         </form>
+
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-slate-200" />
+          <span className="text-xs text-slate-400">OR</span>
+          <div className="flex-1 h-px bg-slate-200" />
+        </div>
+
+        <div className="space-y-2">
+          <GoogleSignInButton onCredential={handleGoogleCredential} />
+          <FacebookSignInButton onAccessToken={handleFacebookToken} label="Continue with Facebook" />
+        </div>
+        {googleError && <p className="text-red-600 text-sm text-center mt-2">{googleError}</p>}
+        {facebookError && <p className="text-red-600 text-sm text-center mt-2">{facebookError}</p>}
 
         <p className="text-sm text-slate-500 mt-6 text-center">
           New to CeylonStay? <Link to="/register" className="text-primary font-medium hover:underline">Create an account</Link>

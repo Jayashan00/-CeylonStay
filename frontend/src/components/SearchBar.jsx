@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DatePicker from 'react-datepicker'
 import api from '../api/client.js'
+import { toLocalDateString, parseLocalDate } from '../utils/dateUtils.js'
 
 const PinIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
@@ -34,9 +35,16 @@ export default function SearchBar({ initial = {} }) {
   const [districts, setDistricts] = useState([])
   const [query, setQuery] = useState(initial.query || '')
   const [district, setDistrict] = useState(initial.district || 'all')
-  const [checkIn, setCheckIn] = useState(initial.checkIn ? new Date(initial.checkIn) : null)
-  const [checkOut, setCheckOut] = useState(initial.checkOut ? new Date(initial.checkOut) : null)
+  const [checkIn, setCheckIn] = useState(initial.checkIn ? parseLocalDate(initial.checkIn) : null)
+  const [checkOut, setCheckOut] = useState(initial.checkOut ? parseLocalDate(initial.checkOut) : null)
   const [guests, setGuests] = useState(initial.guests || 2)
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640)
+
+  useEffect(() => {
+    function handleResize() { setIsMobile(window.innerWidth < 640) }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     api.get('/meta/districts').then((res) => setDistricts(res.data)).catch(() => {})
@@ -47,8 +55,8 @@ export default function SearchBar({ initial = {} }) {
     const params = new URLSearchParams()
     if (query) params.set('query', query)
     if (district && district !== 'all') params.set('district', district)
-    if (checkIn) params.set('checkIn', checkIn.toISOString().slice(0, 10))
-    if (checkOut) params.set('checkOut', checkOut.toISOString().slice(0, 10))
+    if (checkIn) params.set('checkIn', toLocalDateString(checkIn))
+    if (checkOut) params.set('checkOut', toLocalDateString(checkOut))
     params.set('guests', guests)
     navigate(`/hotels?${params.toString()}`)
   }
@@ -100,6 +108,7 @@ export default function SearchBar({ initial = {} }) {
             dateFormat="d MMM yyyy"
             placeholderText="Add date"
             className="block bg-transparent text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none w-28 cursor-pointer"
+            withPortal={isMobile}
           />
         </div>
       </div>
@@ -119,6 +128,7 @@ export default function SearchBar({ initial = {} }) {
             dateFormat="d MMM yyyy"
             placeholderText="Add date"
             className="block bg-transparent text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none w-28 cursor-pointer"
+            withPortal={isMobile}
           />
         </div>
       </div>

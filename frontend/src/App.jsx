@@ -11,6 +11,9 @@ import Login from './pages/auth/Login.jsx'
 import Register from './pages/auth/Register.jsx'
 import GuestBookings from './pages/guest/GuestBookings.jsx'
 import BookingConfirmation from './pages/guest/BookingConfirmation.jsx'
+import BookingDetails from './pages/guest/BookingDetails.jsx'
+import BookingReview from './pages/guest/BookingReview.jsx'
+import ManageBooking from './pages/guest/ManageBooking.jsx'
 
 import OwnerOverview from './pages/owner/OwnerOverview.jsx'
 import OwnerProperties from './pages/owner/OwnerProperties.jsx'
@@ -26,6 +29,9 @@ import AdminHotels from './pages/admin/AdminHotels.jsx'
 import AdminUsers from './pages/admin/AdminUsers.jsx'
 import AdminBookings from './pages/admin/AdminBookings.jsx'
 import AdminSettings from './pages/admin/AdminSettings.jsx'
+import AdminRegionAdmins from './pages/admin/AdminRegionAdmins.jsx'
+import AdminEmailTemplates from './pages/admin/AdminEmailTemplates.jsx'
+import AdminReviews from './pages/admin/AdminReviews.jsx'
 
 import NotFound from './pages/NotFound.jsx'
 
@@ -40,6 +46,14 @@ export default function App() {
           <Route path="/hotels/:id" element={<HotelDetails />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          <Route path="/book/:roomId" element={
+            <ProtectedRoute><BookingDetails /></ProtectedRoute>
+          } />
+          <Route path="/book/:roomId/review" element={
+            <ProtectedRoute><BookingReview /></ProtectedRoute>
+          } />
+          <Route path="/manage-booking/:token" element={<ManageBooking />} />
 
           <Route path="/booking-confirmation/:id" element={
             <ProtectedRoute roles={['GUEST', 'ADMIN', 'HOTEL_OWNER']}><BookingConfirmation /></ProtectedRoute>
@@ -80,16 +94,25 @@ export default function App() {
             <ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>
           } />
           <Route path="/admin/hotels" element={
-            <ProtectedRoute roles={['ADMIN']}><AdminHotels /></ProtectedRoute>
+            <ProtectedRoute roles={['ADMIN', 'REGION_ADMIN']}><AdminHotels /></ProtectedRoute>
           } />
           <Route path="/admin/users" element={
             <ProtectedRoute roles={['ADMIN']}><AdminUsers /></ProtectedRoute>
           } />
           <Route path="/admin/bookings" element={
-            <ProtectedRoute roles={['ADMIN']}><AdminBookings /></ProtectedRoute>
+            <ProtectedRoute roles={['ADMIN', 'REGION_ADMIN']}><AdminBookings /></ProtectedRoute>
           } />
           <Route path="/admin/settings" element={
             <ProtectedRoute roles={['ADMIN']}><AdminSettings /></ProtectedRoute>
+          } />
+          <Route path="/admin/region-admins" element={
+            <ProtectedRoute roles={['ADMIN']}><AdminRegionAdmins /></ProtectedRoute>
+          } />
+          <Route path="/admin/email-templates" element={
+            <ProtectedRoute roles={['ADMIN']}><AdminEmailTemplates /></ProtectedRoute>
+          } />
+          <Route path="/admin/reviews" element={
+            <ProtectedRoute roles={['ADMIN']}><AdminReviews /></ProtectedRoute>
           } />
 
           <Route path="*" element={<NotFound />} />

@@ -34,34 +34,51 @@ export default function AdminDashboard() {
   if (loading) return <Loader />
 
   const cards = [
-    { label: 'Total properties', value: stats.totalHotels, icon: '🏨' },
-    { label: 'Approved & live', value: stats.approvedHotels, icon: '✅' },
-    { label: 'Pending review', value: stats.pendingHotels, icon: '⏳' },
-    { label: 'Registered users', value: stats.totalUsers, icon: '👤' },
-    { label: 'Total bookings', value: stats.totalBookings, icon: '📅' },
-    { label: 'Total revenue (Rs)', value: Math.round(stats.totalRevenue).toLocaleString(), icon: '💰' },
+    { label: 'Total properties', value: stats.totalHotels, icon: '🏨', tint: 'bg-blue-50 text-blue-600' },
+    { label: 'Approved & live', value: stats.approvedHotels, icon: '✅', tint: 'bg-green-50 text-green-600' },
+    { label: 'Pending review', value: stats.pendingHotels, icon: '⏳', tint: 'bg-amber-50 text-amber-600' },
+    { label: 'Registered users', value: stats.totalUsers, icon: '👤', tint: 'bg-indigo-50 text-indigo-600' },
+    { label: 'Total bookings', value: stats.totalBookings, icon: '📅', tint: 'bg-purple-50 text-purple-600' },
+    { label: 'Total revenue (Rs)', value: Math.round(stats.totalRevenue).toLocaleString(), icon: '💰', tint: 'bg-emerald-50 text-emerald-600' },
+  ]
+
+  const quickLinks = [
+    { to: '/admin/hotels', label: 'Manage all properties', icon: '🏨' },
+    { to: '/admin/users', label: 'Manage users', icon: '👥' },
+    { to: '/admin/bookings', label: 'View all bookings', icon: '📋' },
+    { to: '/admin/region-admins', label: 'Region admins', icon: '🗺️' },
+    { to: '/admin/email-templates', label: 'Email templates', icon: '✉️' },
+    { to: '/admin/reviews', label: 'Reviews', icon: '⭐' },
+    { to: '/admin/settings', label: 'Site settings', icon: '⚙️' },
   ]
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <h1 className="font-display font-bold text-2xl mb-1">Admin dashboard</h1>
-      <p className="text-slate-500 text-sm mb-6">Platform-wide overview and moderation</p>
+      <div className="rounded-2xl bg-gradient-to-br from-primary to-primary-dark p-6 sm:p-8 mb-8 text-white relative overflow-hidden">
+        <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/10" />
+        <div className="absolute -right-2 top-16 w-20 h-20 rounded-full bg-white/10" />
+        <div className="relative">
+          <h1 className="font-display font-bold text-2xl sm:text-3xl">Admin dashboard</h1>
+          <p className="text-white/80 text-sm mt-1">Platform-wide overview and moderation</p>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {cards.map((c) => (
           <div key={c.label} className="card p-4">
-            <p className="text-2xl mb-1">{c.icon}</p>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg mb-2 ${c.tint}`}>{c.icon}</div>
             <p className="text-xl font-bold">{c.value}</p>
             <p className="text-xs text-slate-500">{c.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="flex gap-2 mb-6 flex-wrap">
-        <Link to="/admin/hotels" className="btn-outline">Manage all properties</Link>
-        <Link to="/admin/users" className="btn-outline">Manage users</Link>
-        <Link to="/admin/bookings" className="btn-outline">View all bookings</Link>
-        <Link to="/admin/settings" className="btn-outline">Site settings</Link>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-10">
+        {quickLinks.map((l) => (
+          <Link key={l.to} to={l.to} className="card p-3 flex items-center gap-2 text-sm font-medium hover:text-primary">
+            <span>{l.icon}</span> {l.label}
+          </Link>
+        ))}
       </div>
 
       <h2 className="font-display font-bold text-xl mb-4">Pending approvals</h2>

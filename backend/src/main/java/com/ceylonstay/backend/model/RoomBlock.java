@@ -12,8 +12,10 @@ import java.time.LocalDateTime;
 
 /**
  * A hotel-owner-created "block" on a room type for a date range — used for
- * maintenance, renovation, owner's own use, or any offline/manual booking
- * taken outside the platform. It occupies units exactly like a guest
+ * maintenance, renovation, owner's own use, any offline/manual booking taken
+ * outside the platform, OR (new) a date range that came in automatically
+ * from a connected OTA calendar (Booking.com, Trip.lk, Agoda, Airbnb...) via
+ * ChannelSyncService. Either way it occupies units exactly like a guest
  * Booking does for availability purposes (see AvailabilityService), so
  * guests browsing the site immediately see those dates as unavailable —
  * this is not a mock overlay, it feeds the same real availability engine
@@ -45,4 +47,20 @@ public class RoomBlock {
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    // --- OTA channel sync fields (all null/default for ordinary manual blocks) ---
+
+    /** MANUAL (default) or EXTERNAL_SYNC. */
+    @Builder.Default
+    private BlockSource source = BlockSource.MANUAL;
+
+    /**
+     * Only set when source == EXTERNAL_SYNC. The OTA's own event ID (from the
+     * iCal feed's UID field) — used to match this exact block on the next
+     * sync so we can update or remove it instead of duplicating it.
+     */
+    private String externalUid;
+
+    /** Only set when source == EXTERNAL_SYNC, e.g. "Booking.com", "Trip.lk". */
+    private String channelName;
 }

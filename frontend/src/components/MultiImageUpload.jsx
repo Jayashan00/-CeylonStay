@@ -22,7 +22,7 @@ export default function MultiImageUpload({ images = [], onChange, label = 'Photo
       for (const file of files) {
         const formData = new FormData()
         formData.append('file', file)
-        const { data } = await api.post('/uploads', formData, {
+        const { data } = await api.post('/uploads.php', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
         uploadedUrls.push(data.url)

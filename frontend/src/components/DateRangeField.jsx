@@ -11,6 +11,16 @@ import 'react-datepicker/dist/react-datepicker.css'
 export default function DateRangeField({ checkIn, checkOut, onChange, minDate, excludeDateIntervals }) {
   const [start, end] = [checkIn, checkOut]
 
+  // On small screens, open the calendar as a centered full-screen overlay
+  // instead of a floating popup next to the input — floating popups can get
+  // clipped or run off the edge of a narrow phone screen otherwise.
+  const [isMobile, setIsMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth < 640)
+  React.useEffect(() => {
+    function handleResize() { setIsMobile(window.innerWidth < 640) }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   return (
     <div className="grid grid-cols-2 gap-2 w-full">
       <div>
@@ -26,6 +36,7 @@ export default function DateRangeField({ checkIn, checkOut, onChange, minDate, e
           dateFormat="d MMM yyyy"
           className="input-field"
           placeholderText="Add date"
+          withPortal={isMobile}
         />
       </div>
       <div>
@@ -41,6 +52,7 @@ export default function DateRangeField({ checkIn, checkOut, onChange, minDate, e
           dateFormat="d MMM yyyy"
           className="input-field"
           placeholderText="Add date"
+          withPortal={isMobile}
         />
       </div>
     </div>

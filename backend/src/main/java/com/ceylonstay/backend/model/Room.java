@@ -42,4 +42,13 @@ public class Room {
 
     @Builder.Default
     private boolean active = true;
+
+    /**
+     * Unguessable token used to build this room's public iCal export URL
+     * (/api/ical/{roomId}/{icalExportToken}.ics) so Booking.com / Trip.lk /
+     * Airbnb can pull this room's real bookings without needing a login.
+     * Generated on room creation; lazily generated for older rooms the
+     * first time the owner opens the "Sync calendars" panel.
+     */
+    private String icalExportToken;
 }

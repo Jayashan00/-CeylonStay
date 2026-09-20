@@ -21,7 +21,7 @@ export default function ImageUploadField({ label, value, onChange, previewClassN
     formData.append('file', file)
 
     try {
-      const { data } = await api.post('/uploads', formData, {
+      const { data } = await api.post('/uploads.php', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       onChange(data.url)

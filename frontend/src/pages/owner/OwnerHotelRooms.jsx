@@ -131,8 +131,8 @@ export default function OwnerHotelRooms() {
       )}
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 z-[1000] flex items-center justify-center p-4 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-cardHover max-w-lg w-full p-6 my-8 space-y-4">
+        <div className="fixed inset-0 bg-black/40 z-[1000] overflow-y-auto p-4">
+          <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-cardHover max-w-lg w-full p-6 my-8 mx-auto space-y-4">
             <h3 className="font-display font-semibold text-lg">{editingRoomId ? 'Edit room type' : 'Add room type'}</h3>
 
             <input required placeholder="Room type (e.g. Deluxe Double)" value={form.roomType} onChange={(e) => setForm({ ...form, roomType: e.target.value })} className="input-field" />

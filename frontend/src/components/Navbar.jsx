@@ -17,6 +17,7 @@ export default function Navbar() {
 
   function dashboardLink() {
     if (user?.role === 'ADMIN') return '/admin'
+    if (user?.role === 'REGION_ADMIN') return '/admin/hotels'
     if (user?.role === 'HOTEL_OWNER') return '/owner'
     return '/my-bookings'
   }
@@ -43,6 +44,11 @@ export default function Navbar() {
           {user?.role === 'HOTEL_OWNER' && (
             <Link to="/owner/hotels/new" className="text-white/90 hover:text-white px-3 py-2 text-sm font-medium">
               List your property
+            </Link>
+          )}
+          {user?.role === 'GUEST' && (
+            <Link to="/my-bookings" className="text-white/90 hover:text-white px-3 py-2 text-sm font-medium">
+              My bookings
             </Link>
           )}
         </nav>

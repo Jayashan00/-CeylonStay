@@ -60,6 +60,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hotels/**", "/api/rooms/**", "/api/reviews/**", "/api/meta/**", "/api/settings", "/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/ical/**").permitAll() // public per-room export feed for OTAs to poll
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/owner/**").hasAnyAuthority("ROLE_HOTEL_OWNER", "ROLE_ADMIN")
                         .requestMatchers("/api/bookings/**").hasAnyAuthority("ROLE_GUEST", "ROLE_ADMIN", "ROLE_HOTEL_OWNER")

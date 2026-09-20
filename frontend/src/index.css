@@ -14,6 +14,10 @@
 
 html { scroll-behavior: smooth; }
 body { @apply bg-surface text-slate-800 font-sans; }
+/* Safety net: stops any single slightly-too-wide element (a table, a long
+   word, a fixed-width box) from creating an ugly horizontal scrollbar or
+   letting content get cropped off the edge on a phone screen. */
+html, body { overflow-x: hidden; max-width: 100%; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -119,20 +123,40 @@ body { @apply bg-surface text-slate-800 font-sans; }
 }
 
 .btn-primary {
-  @apply bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0;
 }
 .btn-accent {
-  @apply bg-accent hover:bg-accent-dark text-primary-dark font-bold px-5 py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-50;
+  @apply bg-accent hover:bg-accent-dark text-primary-dark font-bold px-5 py-2.5 rounded-lg transition-all duration-150 shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50;
 }
 .btn-outline {
-  @apply border border-primary text-primary hover:bg-primary hover:text-white font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150;
+  @apply border border-primary text-primary hover:bg-primary hover:text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-150 hover:-translate-y-0.5;
 }
 .input-field {
   @apply w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-light focus:border-transparent transition;
 }
 .card {
-  @apply bg-white rounded-xl shadow-card hover:shadow-cardHover transition-shadow duration-200;
+  @apply bg-white rounded-xl shadow-card hover:shadow-cardHover transition-all duration-300;
 }
 .chip {
   @apply inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full bg-slate-100 text-slate-700;
+}
+
+/* Hero image carousel — plain CSS crossfade, no JS animation library needed. */
+@keyframes heroFade {
+  0%, 22% { opacity: 1; }
+  28%, 100% { opacity: 0; }
+}
+.hero-slide {
+  animation: heroFade 24s infinite;
+}
+.hero-slide:nth-child(2) { animation-delay: 6s; }
+.hero-slide:nth-child(3) { animation-delay: 12s; }
+.hero-slide:nth-child(4) { animation-delay: 18s; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s ease-out both;
 }

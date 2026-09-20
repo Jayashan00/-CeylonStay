@@ -16,6 +16,7 @@ export default function AdminHotels() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('ALL')
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [error, setError] = useState('')
 
   function load() {
     setLoading(true)
@@ -25,14 +26,25 @@ export default function AdminHotels() {
   useEffect(() => { load() }, [])
 
   async function setStatus(id, status) {
-    await api.put(`/admin/hotels/${id}/status`, { status })
-    load()
+    setError('')
+    try {
+      await api.put(`/admin/hotels/${id}/status`, { status })
+      load()
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not update this property\'s status.')
+    }
   }
 
   async function confirmDelete() {
-    await api.delete(`/admin/hotels/${deleteTarget}`)
-    setDeleteTarget(null)
-    load()
+    setError('')
+    try {
+      await api.delete(`/admin/hotels/${deleteTarget}`)
+      setDeleteTarget(null)
+      load()
+    } catch (err) {
+      setDeleteTarget(null)
+      setError(err.response?.data?.message || 'Could not delete this property.')
+    }
   }
 
   if (loading) return <Loader />
@@ -53,7 +65,13 @@ export default function AdminHotels() {
         </select>
       </div>
 
-      <div className="grid gap-3">
+      {error && (
+        <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="grid gap-3 mt-4">
         {filtered.map((h) => (
           <div key={h.id} className="card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex gap-3 items-center">

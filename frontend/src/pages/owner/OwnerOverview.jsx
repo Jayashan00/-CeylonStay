@@ -29,32 +29,36 @@ export default function OwnerOverview() {
   if (!stats) return null
 
   const cards = [
-    { label: 'Properties', value: stats.totalProperties, icon: '🏨', sub: `${stats.approvedProperties} live · ${stats.pendingProperties} pending` },
-    { label: 'Active bookings', value: stats.totalBookings, icon: '📅' },
-    { label: 'Check-ins next 7 days', value: stats.upcomingCheckIns, icon: '🧳' },
-    { label: 'Revenue collected', value: `Rs ${Math.round(stats.totalRevenueCollected).toLocaleString()}`, icon: '💰' },
-    { label: 'Outstanding balance', value: `Rs ${Math.round(stats.totalOutstanding).toLocaleString()}`, icon: '⏳' },
+    { label: 'Properties', value: stats.totalProperties, icon: '🏨', sub: `${stats.approvedProperties} live · ${stats.pendingProperties} pending`, tint: 'bg-blue-50 text-blue-600' },
+    { label: 'Active bookings', value: stats.totalBookings, icon: '📅', tint: 'bg-indigo-50 text-indigo-600' },
+    { label: 'Check-ins next 7 days', value: stats.upcomingCheckIns, icon: '🧳', tint: 'bg-amber-50 text-amber-600' },
+    { label: 'Revenue collected', value: `Rs ${Math.round(stats.totalRevenueCollected).toLocaleString()}`, icon: '💰', tint: 'bg-green-50 text-green-600' },
+    { label: 'Outstanding balance', value: `Rs ${Math.round(stats.totalOutstanding).toLocaleString()}`, icon: '⏳', tint: 'bg-rose-50 text-rose-600' },
   ]
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="font-display font-bold text-2xl">Owner dashboard</h1>
-          <p className="text-slate-500 text-sm">Your properties, bookings and payments at a glance</p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Link to="/owner/properties" className="btn-outline">Manage properties</Link>
-          <Link to="/owner/bookings" className="btn-outline">All bookings</Link>
-          <Link to="/owner/payments" className="btn-outline">Payments</Link>
-          <Link to="/owner/hotels/new" className="btn-accent">+ Add property</Link>
+      <div className="rounded-2xl bg-gradient-to-br from-primary to-primary-dark p-6 sm:p-8 mb-8 text-white relative overflow-hidden">
+        <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/10" />
+        <div className="absolute -right-2 top-16 w-20 h-20 rounded-full bg-white/10" />
+        <div className="relative flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="font-display font-bold text-2xl sm:text-3xl">Owner dashboard</h1>
+            <p className="text-white/80 text-sm mt-1">Your properties, bookings and payments at a glance</p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Link to="/owner/properties" className="bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">Manage properties</Link>
+            <Link to="/owner/bookings" className="bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">All bookings</Link>
+            <Link to="/owner/payments" className="bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition">Payments</Link>
+            <Link to="/owner/hotels/new" className="btn-accent text-sm">+ Add property</Link>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
         {cards.map((c) => (
           <div key={c.label} className="card p-4">
-            <p className="text-2xl mb-1">{c.icon}</p>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg mb-2 ${c.tint}`}>{c.icon}</div>
             <p className="text-xl font-bold">{c.value}</p>
             <p className="text-xs text-slate-500">{c.label}</p>
             {c.sub && <p className="text-[11px] text-slate-400 mt-0.5">{c.sub}</p>}

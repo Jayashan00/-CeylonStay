@@ -62,9 +62,13 @@ function FitToMarkers({ hotels }) {
 
 export default function SriLankaMap({ hotels = [], height = '500px' }) {
   const navigate = useNavigate()
+  // Starts "inactive" so a guest scrolling the page with one finger on
+  // mobile doesn't get their scroll swallowed by the map. One tap/click
+  // turns on dragging and zoom — the same pattern Google Maps embeds use.
+  const [active, setActive] = React.useState(false)
 
   return (
-    <div style={{ height }} className="rounded-xl overflow-hidden border border-slate-200">
+    <div style={{ height }} className="rounded-xl overflow-hidden border border-slate-200 relative">
       <MapContainer
         center={SRI_LANKA_CENTER}
         zoom={8}
@@ -73,7 +77,10 @@ export default function SriLankaMap({ hotels = [], height = '500px' }) {
         maxBounds={SRI_LANKA_BOUNDS}
         maxBoundsViscosity={1.0}
         className="leaflet-container"
-        scrollWheelZoom={true}
+        scrollWheelZoom={active}
+        dragging={active}
+        touchZoom={active}
+        doubleClickZoom={active}
       >
         <TileLayer
           attribution='&copy; OpenStreetMap contributors'
@@ -104,6 +111,19 @@ export default function SriLankaMap({ hotels = [], height = '500px' }) {
           ))}
         </MarkerClusterGroup>
       </MapContainer>
+
+      {!active && (
+        <button
+          type="button"
+          onClick={() => setActive(true)}
+          className="absolute inset-0 bg-black/10 hover:bg-black/15 transition-colors flex items-center justify-center z-[500] cursor-pointer"
+          aria-label="Activate map"
+        >
+          <span className="bg-white/95 backdrop-blur-sm text-slate-700 text-sm font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2">
+            👆 Tap to explore the map
+          </span>
+        </button>
+      )}
     </div>
   )
 }

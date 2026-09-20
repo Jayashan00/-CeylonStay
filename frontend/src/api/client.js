@@ -1,7 +1,12 @@
 import axios from 'axios'
 
+// Hardcoded to your live PHP backend so there's no env-file step to get wrong.
+// If you ever run this locally against your old Java backend again, you can
+// temporarily change this one line back to 'http://localhost:8080/api'.
+const API_BASE_URL = 'https://directbooking.lk/api'
+
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: API_BASE_URL,
 })
 
 api.interceptors.request.use((config) => {

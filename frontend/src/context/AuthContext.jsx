@@ -21,6 +21,18 @@ export function AuthProvider({ children }) {
     return data
   }, [])
 
+  const loginWithGoogle = useCallback(async (idToken) => {
+    const { data } = await api.post('/auth/google', { idToken })
+    persist(data)
+    return data
+  }, [])
+
+  const loginWithFacebook = useCallback(async (accessToken) => {
+    const { data } = await api.post('/auth/facebook', { accessToken })
+    persist(data)
+    return data
+  }, [])
+
   function persist(data) {
     const userData = {
       userId: data.userId,
@@ -40,7 +52,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, loginWithFacebook, logout }}>
       {children}
     </AuthContext.Provider>
   )
