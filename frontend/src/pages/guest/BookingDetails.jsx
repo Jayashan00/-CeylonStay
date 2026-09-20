@@ -69,7 +69,7 @@ export default function BookingDetails() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
-      <Link to={`/hotels/${draft.hotelId}`} className="text-primary text-sm hover:underline">← Back to {draft.hotelName}</Link>
+      <Link to={`/hotels/${draft.hotelSlug || draft.hotelId}`} className="text-primary text-sm hover:underline">← Back to {draft.hotelName}</Link>
       <h1 className="font-display font-bold text-2xl mt-2 mb-4">Your details</h1>
 
       <BookingStepper current={2} />

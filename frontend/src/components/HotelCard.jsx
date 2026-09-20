@@ -5,7 +5,7 @@ import ScoreBadge from './ScoreBadge.jsx'
 
 export default function HotelCard({ hotel }) {
   return (
-    <Link to={`/hotels/${hotel.id}`} className="card flex flex-col sm:flex-row overflow-hidden group">
+    <Link to={`/hotels/${hotel.slug || hotel.id}`} className="card flex flex-col sm:flex-row overflow-hidden group">
       <div className="sm:w-72 h-56 sm:h-auto overflow-hidden shrink-0">
         <img
           src={hotel.images?.[0]}

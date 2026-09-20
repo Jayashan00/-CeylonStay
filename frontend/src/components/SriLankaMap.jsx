@@ -98,7 +98,7 @@ export default function SriLankaMap({ hotels = [], height = '500px' }) {
               key={hotel.id}
               position={[hotel.location.lat, hotel.location.lng]}
               icon={priceIcon(hotel.lowestPrice)}
-              eventHandlers={{ click: () => navigate(`/hotels/${hotel.id}`) }}
+              eventHandlers={{ click: () => navigate(`/hotels/${hotel.slug || hotel.id}`) }}
             >
               <Popup>
                 <div className="w-44">

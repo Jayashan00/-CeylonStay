@@ -137,6 +137,7 @@ export default function HotelDetails() {
   function proceedToBooking(room) {
     const draft = {
       hotelId: id,
+      hotelSlug: hotel.slug || id,
       hotelName: hotel.name,
       hotelImage: hotel.images?.[0] || '',
       roomId: room.id,

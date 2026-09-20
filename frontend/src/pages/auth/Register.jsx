@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
 import GoogleSignInButton from '../../components/GoogleSignInButton.jsx'
 import FacebookSignInButton from '../../components/FacebookSignInButton.jsx'
@@ -7,8 +7,19 @@ import FacebookSignInButton from '../../components/FacebookSignInButton.jsx'
 export default function Register() {
   const { register, loginWithGoogle, loginWithFacebook } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const defaultRole = searchParams.get('role') === 'HOTEL_OWNER' ? 'HOTEL_OWNER' : 'GUEST'
+
+  // If arriving here after being bounced from a page that needs login
+  // (e.g. mid-booking), send them straight back there once they sign up
+  // instead of the homepage/dashboard, so they never lose their place.
+  function redirectAfterAuth(role) {
+    const from = location.state?.from
+    if (from) return navigate(from, { state: location.state?.fromState, replace: true })
+    if (role === 'HOTEL_OWNER') return navigate('/owner')
+    return navigate('/my-bookings')
+  }
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -24,8 +35,7 @@ export default function Register() {
     setGoogleError('')
     try {
       const data = await loginWithGoogle(idToken)
-      if (data.role === 'HOTEL_OWNER') navigate('/owner')
-      else navigate('/')
+      redirectAfterAuth(data.role)
     } catch (err) {
       setGoogleError(err.response?.data?.message || 'Could not sign up with Google. Please try again.')
     }
@@ -35,8 +45,7 @@ export default function Register() {
     setFacebookError('')
     try {
       const data = await loginWithFacebook(accessToken)
-      if (data.role === 'HOTEL_OWNER') navigate('/owner')
-      else navigate('/')
+      redirectAfterAuth(data.role)
     } catch (err) {
       setFacebookError(err.response?.data?.message || 'Could not sign up with Facebook. Please try again.')
     }
@@ -48,8 +57,7 @@ export default function Register() {
     setLoading(true)
     try {
       const data = await register({ fullName, email, phone, password, role })
-      if (data.role === 'HOTEL_OWNER') navigate('/owner')
-      else navigate('/my-bookings')
+      redirectAfterAuth(data.role)
     } catch (err) {
       setError(err.response?.data?.message || 'Could not create account.')
     } finally {

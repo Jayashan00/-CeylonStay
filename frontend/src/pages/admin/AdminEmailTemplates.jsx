@@ -8,9 +8,20 @@ const LABELS = {
   HOTEL_OWNER: 'Hotel owner (new booking alert)',
   REGION_ADMIN: 'Region admin (new booking in their district)',
   ADMIN: 'Super admin (new booking alert)',
+  WELCOME: 'Welcome email (sent to every new sign-up)',
+  NEW_REGISTRATION: 'Super admin (new account registered)',
+  NEW_HOTEL_SUBMITTED: 'Super admin & region admin (new property submitted)',
 }
 
-const PLACEHOLDERS = ['guestName', 'guestEmail', 'hotelName', 'roomType', 'checkIn', 'checkOut', 'totalPrice', 'bookingReference', 'district', 'ownerName', 'siteName']
+const PLACEHOLDERS_BY_TYPE = {
+  GUEST: ['guestName', 'guestEmail', 'hotelName', 'roomType', 'checkIn', 'checkOut', 'totalPrice', 'bookingReference', 'district', 'ownerName', 'siteName', 'manageUrl'],
+  HOTEL_OWNER: ['guestName', 'guestEmail', 'hotelName', 'roomType', 'checkIn', 'checkOut', 'totalPrice', 'bookingReference', 'district', 'ownerName', 'siteName'],
+  REGION_ADMIN: ['guestName', 'guestEmail', 'hotelName', 'roomType', 'checkIn', 'checkOut', 'totalPrice', 'bookingReference', 'district', 'ownerName', 'siteName', 'recipientName'],
+  ADMIN: ['guestName', 'guestEmail', 'hotelName', 'roomType', 'checkIn', 'checkOut', 'totalPrice', 'bookingReference', 'district', 'ownerName', 'siteName'],
+  WELCOME: ['fullName', 'email', 'role', 'siteName'],
+  NEW_REGISTRATION: ['fullName', 'email', 'role', 'siteName'],
+  NEW_HOTEL_SUBMITTED: ['hotelName', 'ownerName', 'ownerEmail', 'district', 'propertyType', 'siteName', 'recipientName'],
+}
 
 function TemplateEditor({ template, onSaved }) {
   const [subject, setSubject] = useState(template.subject)
@@ -46,8 +57,7 @@ function TemplateEditor({ template, onSaved }) {
       <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8} className="input-field font-mono text-sm mb-2" />
 
       <p className="text-xs text-slate-400 mb-3">
-        Available placeholders: {PLACEHOLDERS.map((p) => `{{${p}}}`).join(', ')}
-        {template.recipientType === 'REGION_ADMIN' && ', {{recipientName}}'}
+        Available placeholders: {(PLACEHOLDERS_BY_TYPE[template.recipientType] || ['siteName']).map((p) => `{{${p}}}`).join(', ')}
       </p>
 
       {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
@@ -78,11 +88,13 @@ export default function AdminEmailTemplates() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <Link to="/admin" className="text-primary text-sm hover:underline">← Back to dashboard</Link>
-      <h1 className="font-display font-bold text-2xl mt-2 mb-1">Booking email notifications</h1>
+      <h1 className="font-display font-bold text-2xl mt-2 mb-1">Email notifications</h1>
       <p className="text-slate-500 text-sm mb-6">
         Whenever a guest completes a booking, four emails go out automatically: to the guest (confirmation), the
         hotel owner (new booking alert), any region admin assigned to that hotel's district, and the super admin.
-        Customize the wording for each below.
+        A welcome email also goes out to every new sign-up, with a heads-up to the super admin — and whenever a
+        hotel owner submits a new property, the super admin and that district's region admin are notified so it
+        can be reviewed. Customize the wording for each below.
       </p>
 
       <div className="space-y-6">

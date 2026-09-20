@@ -75,7 +75,7 @@ export default function BookingReview() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold">Your stay</h2>
-            <Link to={`/hotels/${draft.hotelId}`} className="text-xs text-primary hover:underline">Change room or dates</Link>
+            <Link to={`/hotels/${draft.hotelSlug || draft.hotelId}`} className="text-xs text-primary hover:underline">Change room or dates</Link>
           </div>
           <div className="flex gap-4">
             {draft.hotelImage && <img src={draft.hotelImage} className="w-28 h-28 object-cover rounded-lg flex-shrink-0" alt="" />}

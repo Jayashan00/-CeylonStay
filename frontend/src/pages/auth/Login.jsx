@@ -51,7 +51,12 @@ export default function Login() {
 
   function redirectByRole(role) {
     const from = location.state?.from
-    if (from) return navigate(from)
+    if (from) {
+      // Send them straight back to the page they were on (e.g. the booking
+      // details form) with its original state restored, instead of the
+      // homepage — so they never have to search for the hotel again.
+      return navigate(from, { state: location.state?.fromState, replace: true })
+    }
     if (role === 'ADMIN') return navigate('/admin')
     if (role === 'REGION_ADMIN') return navigate('/admin/hotels')
     if (role === 'HOTEL_OWNER') return navigate('/owner')
@@ -85,15 +90,8 @@ export default function Login() {
         {facebookError && <p className="text-red-600 text-sm text-center mt-2">{facebookError}</p>}
 
         <p className="text-sm text-slate-500 mt-6 text-center">
-          New to CeylonStay? <Link to="/register" className="text-primary font-medium hover:underline">Create an account</Link>
+          New to CeylonStay? <Link to="/register" state={location.state} className="text-primary font-medium hover:underline">Create an account</Link>
         </p>
-
-        <div className="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-400 space-y-1">
-          <p className="font-semibold text-slate-500">Demo accounts</p>
-          <p>Admin: admin@ceylonstay.lk / admin123</p>
-          <p>Hotel owner: owner1@ceylonstay.lk / owner123</p>
-          <p>Guest: guest@ceylonstay.lk / guest123</p>
-        </div>
       </div>
     </div>
   )
