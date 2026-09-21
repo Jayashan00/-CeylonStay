@@ -3,55 +3,11 @@ import { Link } from 'react-router-dom'
 import api from '../../api/client.js'
 import Loader from '../../components/Loader.jsx'
 
-const STATUS_STYLES = {
-  CONFIRMED: 'bg-green-100 text-green-700',
-  MODIFIED: 'bg-blue-100 text-blue-700',
-  CANCELLED: 'bg-red-100 text-red-700',
-  COMPLETED: 'bg-slate-100 text-slate-600',
-}
-
-export default function AdminBookings() {
-  const [bookings, setBookings] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get('/admin/bookings').then((res) => setBookings(res.data)).finally(() => setLoading(false))
-  }, [])
-
-  if (loading) return <Loader />
-
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      <Link to="/admin" className="text-primary text-sm hover:underline">← Back to dashboard</Link>
-      <h1 className="font-display font-bold text-2xl mt-2 mb-6">All bookings ({bookings.length})</h1>
-
-      <div className="overflow-x-auto card">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-left">
-            <tr>
-              <th className="p-3">Reference</th>
-              <th className="p-3">Hotel</th>
-              <th className="p-3">Guest</th>
-              <th className="p-3">Dates</th>
-              <th className="p-3">Total</th>
-              <th className="p-3">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((b) => (
-              <tr key={b.id} className="border-t border-slate-100">
-                <td className="p-3 font-medium">{b.bookingReference}</td>
-                <td className="p-3">{b.hotelName}<br /><span className="text-xs text-slate-400">{b.roomType}</span></td>
-                <td className="p-3">{b.guestFullName}<br /><span className="text-xs text-slate-400">{b.guestEmail}</span></td>
-                <td className="p-3">{b.checkIn}<br />→ {b.checkOut}</td>
-                <td className="p-3 font-semibold text-primary">Rs {b.totalPrice.toLocaleString()}</td>
-                <td className="p-3"><span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_STYLES[b.status]}`}>{b.status}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {bookings.length === 0 && <p className="text-slate-500 p-6 text-center">No bookings yet.</p>}
-      </div>
-    </div>
-  )
+const STATUS={CONFIRMED:'bg-green-100 text-green-700',MODIFIED:'bg-blue-100 text-blue-700',CANCELLED:'bg-red-100 text-red-700',COMPLETED:'bg-slate-100 text-slate-600'}
+export default function AdminBookings(){const [bookings,setBookings]=useState([]);const [loading,setLoading]=useState(true);const [error,setError]=useState('');
+ function load(){setLoading(true);api.get('/admin/bookings').then(r=>setBookings(r.data)).catch(e=>setError(e.response?.data?.message||'Could not load bookings.')).finally(()=>setLoading(false))}
+ useEffect(()=>{load()},[])
+ async function change(id,status){setError('');try{await api.put(`/admin/bookings/${id}/status`,{status});load()}catch(e){setError(e.response?.data?.message||'Could not update booking.')}}
+ if(loading)return <Loader/>
+ return <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10"><Link to="/admin" className="text-primary text-sm hover:underline">← Back to dashboard</Link><h1 className="font-display font-bold text-2xl mt-2 mb-5">All bookings ({bookings.length})</h1>{error&&<p className="mb-4 text-red-600 text-sm">{error}</p>}<div className="overflow-x-auto card"><table className="w-full text-sm"><thead className="bg-slate-50 text-slate-500 text-left"><tr><th className="p-3">Reference</th><th className="p-3">Hotel / room</th><th className="p-3">Guest</th><th className="p-3">Dates</th><th className="p-3">Total</th><th className="p-3">Status</th><th className="p-3">Actions</th></tr></thead><tbody>{bookings.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(b=><tr key={b.id} className="border-t border-slate-100"><td className="p-3 font-medium">{b.bookingReference}</td><td className="p-3">{b.hotelName}<br/><span className="text-xs text-slate-400">{b.roomType}</span></td><td className="p-3">{b.guestFullName}<br/><span className="text-xs text-slate-400">{b.guestEmail}</span></td><td className="p-3">{b.checkIn}<br/>→ {b.checkOut}</td><td className="p-3 font-semibold text-primary">Rs {Number(b.totalPrice).toLocaleString()}</td><td className="p-3"><span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS[b.status]||'bg-slate-100'}`}>{b.status}</span></td><td className="p-3"><div className="flex gap-2">{b.status!=='CANCELLED'&&b.status!=='COMPLETED'&&<button onClick={()=>change(b.id,'CANCELLED')} className="text-xs font-semibold text-red-600 border border-red-200 rounded-lg px-2.5 py-2">Cancel</button>}{b.status==='CANCELLED'&&<button onClick={()=>change(b.id,'CONFIRMED')} className="text-xs font-semibold text-green-700 border border-green-200 rounded-lg px-2.5 py-2">Restore</button>}{b.status==='CONFIRMED'&&<button onClick={()=>change(b.id,'COMPLETED')} className="text-xs font-semibold text-primary border border-slate-200 rounded-lg px-2.5 py-2">Complete</button>}</div></td></tr>)}</tbody></table>{!bookings.length&&<p className="text-slate-500 p-6 text-center">No bookings yet.</p>}</div></div>
 }

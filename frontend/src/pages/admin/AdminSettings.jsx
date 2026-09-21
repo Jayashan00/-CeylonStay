@@ -5,133 +5,17 @@ import Loader from '../../components/Loader.jsx'
 import ImageUploadField from '../../components/ImageUploadField.jsx'
 import { useSiteSettings } from '../../context/SiteSettingsContext.jsx'
 
-export default function AdminSettings() {
-  const { refresh } = useSiteSettings()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-
-  const [form, setForm] = useState({
-    siteName: '', tagline: '', logoUrl: '', faviconUrl: '', heroImageUrl: '',
-    primaryColor: '#003580', accentColor: '#febb02',
-    contactEmail: '', contactPhone: '', footerAbout: '', currencySymbol: 'Rs',
-  })
-
-  useEffect(() => {
-    api.get('/settings').then((res) => setForm(res.data)).finally(() => setLoading(false))
-  }, [])
-
-  function update(field, value) {
-    setForm((f) => ({ ...f, [field]: value }))
-    setSuccess(false)
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setSaving(true)
-    setError('')
-    setSuccess(false)
-    try {
-      await api.put('/admin/settings', form)
-      await refresh() // re-applies the new branding/colors across the whole site immediately
-      setSuccess(true)
-    } catch (err) {
-      setError(err.response?.data?.message || 'Could not save settings.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (loading) return <Loader />
-
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <Link to="/admin" className="text-primary text-sm hover:underline">← Back to dashboard</Link>
-      <h1 className="font-display font-bold text-2xl mt-2 mb-1">Site settings</h1>
-      <p className="text-slate-500 text-sm mb-6">
-        Customize the site name, logo, colors and contact details shown across the whole platform.
-      </p>
-
-      <form onSubmit={handleSubmit} className="card p-6 space-y-6">
-        <section>
-          <h2 className="font-semibold mb-3">Branding</h2>
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Site name</label>
-              <input required value={form.siteName} onChange={(e) => update('siteName', e.target.value)} className="input-field" />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Tagline (shown in the homepage hero)</label>
-              <input value={form.tagline} onChange={(e) => update('tagline', e.target.value)} className="input-field" />
-            </div>
-            <div>
-              <ImageUploadField label="Logo" value={form.logoUrl} onChange={(url) => update('logoUrl', url)} previewClassName="h-8 object-contain" />
-              <p className="text-xs text-slate-400 mt-1">Leave empty to use the default 🏝️ icon.</p>
-            </div>
-            <div>
-              <ImageUploadField label="Favicon" value={form.faviconUrl} onChange={(url) => update('faviconUrl', url)} previewClassName="h-8 w-8 object-contain" />
-            </div>
-            <div>
-              <ImageUploadField label="Homepage hero image" value={form.heroImageUrl} onChange={(url) => update('heroImageUrl', url)} previewClassName="h-16 w-28 object-cover rounded" />
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="font-semibold mb-3">Theme colors</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Primary color</label>
-              <div className="flex items-center gap-2">
-                <input type="color" value={form.primaryColor} onChange={(e) => update('primaryColor', e.target.value)} className="w-12 h-10 rounded border border-slate-300" />
-                <input value={form.primaryColor} onChange={(e) => update('primaryColor', e.target.value)} className="input-field" />
-              </div>
-              <p className="text-xs text-slate-400 mt-1">Used for the navbar, buttons and links site-wide.</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Accent color</label>
-              <div className="flex items-center gap-2">
-                <input type="color" value={form.accentColor} onChange={(e) => update('accentColor', e.target.value)} className="w-12 h-10 rounded border border-slate-300" />
-                <input value={form.accentColor} onChange={(e) => update('accentColor', e.target.value)} className="input-field" />
-              </div>
-              <p className="text-xs text-slate-400 mt-1">Used for highlights like the Search button.</p>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="font-semibold mb-3">Contact & footer</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Contact email</label>
-              <input type="email" value={form.contactEmail} onChange={(e) => update('contactEmail', e.target.value)} className="input-field" />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Contact phone</label>
-              <input value={form.contactPhone} onChange={(e) => update('contactPhone', e.target.value)} className="input-field" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <label className="text-sm font-medium mb-1 block">Footer "about" text</label>
-            <textarea rows={2} value={form.footerAbout} onChange={(e) => update('footerAbout', e.target.value)} className="input-field" />
-          </div>
-          <div className="mt-3">
-            <label className="text-sm font-medium mb-1 block">Currency symbol</label>
-            <input value={form.currencySymbol} onChange={(e) => update('currencySymbol', e.target.value)} className="input-field w-32" />
-            <p className="text-xs text-slate-400 mt-1">
-              Currently for display reference only — prices elsewhere in the app are shown with "Rs" hardcoded; see README for wiring this up everywhere.
-            </p>
-          </div>
-        </section>
-
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        {success && <p className="text-green-600 text-sm">Settings saved — the new branding is now live across the site.</p>}
-
-        <div className="flex justify-end">
-          <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Saving...' : 'Save settings'}</button>
-        </div>
-      </form>
-    </div>
-  )
+const LANGS=[['en','English'],['si','සිංහල'],['ta','தமிழ்'],['hi','हिन्दी'],['fr','Français'],['de','Deutsch'],['es','Español'],['it','Italiano'],['ja','日本語'],['ko','한국어'],['zh-CN','中文'],['ar','العربية']]
+const DEFAULT={siteName:'Official Direct Booking Platform',tagline:'Find your next stay with an extra discount anywhere in Sri Lanka',heroDescription:'From colonial hotels on Galle Face Green to clifftop resorts above Weligama Bay — search hotels, resorts, villas and homestays island-wide.',logoUrl:'',faviconUrl:'',heroImageUrl:'',primaryColor:'#003580',accentColor:'#febb02',contactEmail:'directbookinglk@gmail.com',contactPhone:'+94 777186226',footerAbout:'Direct Booking Platform for hotels, resorts, Guest Houses, villas, bungalows, and all accommodation in Sri Lanka',footerCopyright:'© 2026 Official Direct Booking Platform. All rights reserved from Layathraa Holidays.',currencySymbol:'Rs',translationEnabled:true,defaultLanguage:'en',availableLanguages:['en','si','ta','hi','fr','de','es','it','ja','ko','zh-CN','ar']}
+export default function AdminSettings(){const {refresh}=useSiteSettings();const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(false);const [error,setError]=useState('');const [success,setSuccess]=useState(false);const [form,setForm]=useState(DEFAULT)
+ useEffect(()=>{api.get('/settings').then(r=>setForm({...DEFAULT,...r.data})).finally(()=>setLoading(false))},[]);function update(k,v){setForm(f=>({...f,[k]:v}));setSuccess(false)}function toggleLang(code){setForm(f=>({...f,availableLanguages:f.availableLanguages.includes(code)?f.availableLanguages.filter(x=>x!==code):[...f.availableLanguages,code]}))}
+ async function save(e){e.preventDefault();setSaving(true);setError('');try{await api.put('/admin/settings',form);await refresh();setSuccess(true)}catch(e){setError(e.response?.data?.message||'Could not save settings.')}finally{setSaving(false)}}
+ if(loading)return <Loader/>
+ return <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10"><Link to="/admin" className="text-primary text-sm hover:underline">← Back to dashboard</Link><h1 className="font-display font-bold text-2xl mt-2">Whole-site settings</h1><p className="text-slate-500 text-sm mb-6">Super admin can control the public branding, hero, footer, contact details and translation settings from here.</p><form onSubmit={save} className="card p-4 sm:p-6 space-y-7">
+  <section><h2 className="font-semibold text-lg mb-3">Branding</h2><div className="space-y-3"><div><label className="text-sm font-medium block mb-1">Site name</label><input value={form.siteName} onChange={e=>update('siteName',e.target.value)} className="input-field"/></div><div><label className="text-sm font-medium block mb-1">Homepage hero headline</label><input value={form.tagline} onChange={e=>update('tagline',e.target.value)} className="input-field"/></div><div><label className="text-sm font-medium block mb-1">Homepage hero description</label><textarea rows={3} value={form.heroDescription} onChange={e=>update('heroDescription',e.target.value)} className="input-field"/></div><ImageUploadField label="Logo" value={form.logoUrl} onChange={v=>update('logoUrl',v)} previewClassName="h-12 max-w-[180px] object-contain"/><ImageUploadField label="Favicon" value={form.faviconUrl} onChange={v=>update('faviconUrl',v)} previewClassName="h-10 w-10 object-contain"/><ImageUploadField label="Hero image" value={form.heroImageUrl} onChange={v=>update('heroImageUrl',v)} previewClassName="h-28 w-full object-cover rounded-lg"/></div></section>
+  <section><h2 className="font-semibold text-lg mb-3">Theme</h2><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div><label className="text-sm font-medium block mb-1">Primary</label><div className="flex gap-2"><input type="color" value={form.primaryColor} onChange={e=>update('primaryColor',e.target.value)} className="w-12 h-11 rounded"/><input value={form.primaryColor} onChange={e=>update('primaryColor',e.target.value)} className="input-field"/></div></div><div><label className="text-sm font-medium block mb-1">Accent</label><div className="flex gap-2"><input type="color" value={form.accentColor} onChange={e=>update('accentColor',e.target.value)} className="w-12 h-11 rounded"/><input value={form.accentColor} onChange={e=>update('accentColor',e.target.value)} className="input-field"/></div></div></div></section>
+  <section><h2 className="font-semibold text-lg mb-3">Footer & contact</h2><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div><label className="text-sm font-medium block mb-1">Email</label><input value={form.contactEmail} onChange={e=>update('contactEmail',e.target.value)} className="input-field"/></div><div><label className="text-sm font-medium block mb-1">Phone</label><input value={form.contactPhone} onChange={e=>update('contactPhone',e.target.value)} className="input-field"/></div></div><div className="mt-3"><label className="text-sm font-medium block mb-1">Footer description</label><textarea rows={3} value={form.footerAbout} onChange={e=>update('footerAbout',e.target.value)} className="input-field"/></div><div className="mt-3"><label className="text-sm font-medium block mb-1">Footer copyright</label><input value={form.footerCopyright} onChange={e=>update('footerCopyright',e.target.value)} className="input-field"/></div></section>
+  <section><h2 className="font-semibold text-lg mb-3">Languages</h2><label className="flex items-center gap-2 text-sm font-medium mb-4"><input type="checkbox" checked={form.translationEnabled} onChange={e=>update('translationEnabled',e.target.checked)} className="accent-primary w-4 h-4"/>Enable website translation</label><div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{LANGS.map(([code,label])=><label key={code} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"><input type="checkbox" checked={form.availableLanguages.includes(code)} onChange={()=>toggleLang(code)} className="accent-primary"/>{label}</label>)}</div><div className="mt-4"><label className="text-sm font-medium block mb-1">Default language</label><select value={form.defaultLanguage} onChange={e=>update('defaultLanguage',e.target.value)} className="input-field sm:w-64">{LANGS.map(([code,label])=><option key={code} value={code}>{label}</option>)}</select></div></section>
+  {error&&<p className="text-red-600 text-sm">{error}</p>}{success&&<p className="text-green-600 text-sm">Settings saved and applied across the site.</p>}<div className="flex justify-end"><button disabled={saving} className="btn-primary w-full sm:w-auto">{saving?'Saving…':'Save all site settings'}</button></div>
+ </form></div>
 }

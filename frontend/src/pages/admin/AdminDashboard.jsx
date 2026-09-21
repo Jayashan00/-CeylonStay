@@ -50,6 +50,7 @@ export default function AdminDashboard() {
     { to: '/admin/email-templates', label: 'Email templates', icon: '✉️' },
     { to: '/admin/reviews', label: 'Reviews', icon: '⭐' },
     { to: '/admin/settings', label: 'Site settings', icon: '⚙️' },
+    { to: '/admin/facilities', label: 'Hotel & room facilities', icon: '🛏️' },
   ]
 
   return (

@@ -160,3 +160,68 @@ html, body { overflow-x: hidden; max-width: 100%; }
 .animate-fade-in-up {
   animation: fadeInUp 0.7s ease-out both;
 }
+/* ============================================================
+   MOBILE / TOUCH RESPONSIVENESS
+   ============================================================ */
+* { box-sizing: border-box; }
+img, video { max-width: 100%; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+input, select, textarea { min-width: 0; }
+
+/* React DatePicker mobile portal */
+.react-datepicker__portal {
+  background: rgba(15, 23, 42, .68) !important;
+  z-index: 10000 !important;
+  padding: 18px !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.react-datepicker__portal .react-datepicker {
+  width: min(94vw, 380px) !important;
+  max-width: 380px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+}
+.react-datepicker__portal .react-datepicker__month-container { width: 100% !important; }
+.react-datepicker__portal .react-datepicker__month { margin: .6rem !important; }
+.react-datepicker__portal .react-datepicker__day,
+.react-datepicker__portal .react-datepicker__day-name {
+  width: 2.35rem !important;
+  line-height: 2.35rem !important;
+  margin: .08rem !important;
+}
+.react-datepicker__portal .react-datepicker__header { padding-top: 12px !important; }
+.react-datepicker__portal .react-datepicker__current-month { font-size: 1rem !important; }
+
+@media (max-width: 767px) {
+  .card { border-radius: 16px; }
+  .btn-primary, .btn-accent, .btn-outline { min-height: 44px; }
+  .input-field { min-height: 46px; }
+  .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+  table { min-width: 680px; }
+  .react-datepicker-popper { max-width: calc(100vw - 24px) !important; }
+}
+
+@media (max-width: 639px) {
+  .grid-cols-2 { grid-template-columns: minmax(0,1fr) !important; }
+  .grid-cols-3 { grid-template-columns: minmax(0,1fr) !important; }
+  .grid-cols-4 { grid-template-columns: minmax(0,1fr) !important; }
+  .grid-cols-6 { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+  .h-\[560px\] { height: auto !important; min-height: 650px; }
+  .h-\[620px\] { height: auto !important; min-height: 690px; }
+  .max-w-7xl { max-width: 100%; }
+}
+
+@media (max-width: 380px) {
+  .react-datepicker__portal { padding: 8px !important; }
+  .react-datepicker__portal .react-datepicker { width: 96vw !important; }
+  .react-datepicker__portal .react-datepicker__day,
+  .react-datepicker__portal .react-datepicker__day-name { width: 2.05rem !important; line-height: 2.05rem !important; }
+}
+
+.goog-te-banner-frame.skiptranslate { display: none !important; }
+body { top: 0 !important; }
+.goog-logo-link, .goog-te-gadget span { display: none !important; }
+
+
+

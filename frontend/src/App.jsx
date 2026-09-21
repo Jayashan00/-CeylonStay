@@ -32,6 +32,7 @@ import AdminSettings from './pages/admin/AdminSettings.jsx'
 import AdminRegionAdmins from './pages/admin/AdminRegionAdmins.jsx'
 import AdminEmailTemplates from './pages/admin/AdminEmailTemplates.jsx'
 import AdminReviews from './pages/admin/AdminReviews.jsx'
+import AdminFacilities from './pages/admin/AdminFacilities.jsx'
 
 import NotFound from './pages/NotFound.jsx'
 
@@ -113,6 +114,9 @@ export default function App() {
           } />
           <Route path="/admin/reviews" element={
             <ProtectedRoute roles={['ADMIN']}><AdminReviews /></ProtectedRoute>
+          } />
+          <Route path="/admin/facilities" element={
+            <ProtectedRoute roles={['ADMIN']}><AdminFacilities /></ProtectedRoute>
           } />
 
           <Route path="*" element={<NotFound />} />

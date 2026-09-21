@@ -11,9 +11,6 @@ export default function Register() {
   const [searchParams] = useSearchParams()
   const defaultRole = searchParams.get('role') === 'HOTEL_OWNER' ? 'HOTEL_OWNER' : 'GUEST'
 
-  // If arriving here after being bounced from a page that needs login
-  // (e.g. mid-booking), send them straight back there once they sign up
-  // instead of the homepage/dashboard, so they never lose their place.
   function redirectAfterAuth(role) {
     const from = location.state?.from
     if (from) return navigate(from, { state: location.state?.fromState, replace: true })
@@ -66,10 +63,10 @@ export default function Register() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <div className="card p-8">
+    <div className="max-w-md mx-auto px-4 py-8 sm:py-16">
+      <div className="card p-5 sm:p-8">
         <h1 className="font-display font-bold text-2xl mb-1">Create your account</h1>
-        <p className="text-slate-500 text-sm mb-6">Join CeylonStay as a guest or list your property</p>
+        <p className="text-slate-500 text-sm mb-6">Join Official Direct Booking Platform as a guest or list your property</p>
 
         <div className="grid grid-cols-2 gap-2 mb-5">
           <button type="button" onClick={() => setRole('GUEST')} className={`rounded-lg border py-2.5 text-sm font-medium ${role === 'GUEST' ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200 text-slate-500'}`}>
@@ -99,8 +96,10 @@ export default function Register() {
           <GoogleSignInButton onCredential={handleGoogleCredential} text="signup_with" />
           <FacebookSignInButton onAccessToken={handleFacebookToken} label="Sign up with Facebook" />
         </div>
+
         {googleError && <p className="text-red-600 text-sm text-center mt-2">{googleError}</p>}
         {facebookError && <p className="text-red-600 text-sm text-center mt-2">{facebookError}</p>}
+
         <p className="text-xs text-slate-400 text-center mt-2">Signing up with Google always creates a guest account — switch to a hotel owner account afterward from your profile if needed.</p>
 
         <p className="text-sm text-slate-500 mt-6 text-center">

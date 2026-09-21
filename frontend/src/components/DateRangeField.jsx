@@ -2,57 +2,55 @@ import React from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 
-/**
- * excludeDateIntervals: optional array of { start: Date, end: Date } —
- * fully-booked ranges (from the availability API) that get greyed out and
- * made unselectable in both calendars, so a guest can see at a glance which
- * dates are unavailable before they even try to submit a booking.
- */
-export default function DateRangeField({ checkIn, checkOut, onChange, minDate, excludeDateIntervals }) {
-  const [start, end] = [checkIn, checkOut]
+export default function DateRangeField({ checkIn, checkOut, onChange, minDate, excludeDateIntervals, compact = false }) {
+  const [isMobile, setIsMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth < 768)
 
-  // On small screens, open the calendar as a centered full-screen overlay
-  // instead of a floating popup next to the input — floating popups can get
-  // clipped or run off the edge of a narrow phone screen otherwise.
-  const [isMobile, setIsMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth < 640)
   React.useEffect(() => {
-    function handleResize() { setIsMobile(window.innerWidth < 640) }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    const onResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  const common = {
+    minDate: minDate || new Date(),
+    excludeDateIntervals,
+    dateFormat: 'd MMM yyyy',
+    withPortal: isMobile,
+    portalId: isMobile ? undefined : undefined,
+    popperClassName: 'ceylon-date-popper',
+    calendarClassName: 'ceylon-calendar',
+    showPopperArrow: false,
+    shouldCloseOnSelect: true,
+    isClearable: true,
+  }
+
   return (
-    <div className="grid grid-cols-2 gap-2 w-full">
-      <div>
-        <label className="text-xs text-slate-400 mb-1 block">Check-in</label>
+    <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 w-full ${compact ? '' : ''}`}>
+      <div className="min-w-0">
+        <label className="text-xs font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">Check-in</label>
         <DatePicker
-          selected={start}
-          onChange={(date) => onChange(date, end && end > date ? end : null)}
+          {...common}
+          selected={checkIn}
+          onChange={(date) => onChange(date, checkOut && date && checkOut > date ? checkOut : null)}
           selectsStart
-          startDate={start}
-          endDate={end}
-          minDate={minDate || new Date()}
-          excludeDateIntervals={excludeDateIntervals}
-          dateFormat="d MMM yyyy"
-          className="input-field"
-          placeholderText="Add date"
-          withPortal={isMobile}
+          startDate={checkIn}
+          endDate={checkOut}
+          placeholderText="Select date"
+          className="input-field w-full cursor-pointer"
         />
       </div>
-      <div>
-        <label className="text-xs text-slate-400 mb-1 block">Check-out</label>
+      <div className="min-w-0">
+        <label className="text-xs font-semibold text-slate-500 mb-1.5 block uppercase tracking-wide">Check-out</label>
         <DatePicker
-          selected={end}
-          onChange={(date) => onChange(start, date)}
+          {...common}
+          selected={checkOut}
+          onChange={(date) => onChange(checkIn, date)}
           selectsEnd
-          startDate={start}
-          endDate={end}
-          minDate={start || new Date()}
-          excludeDateIntervals={excludeDateIntervals}
-          dateFormat="d MMM yyyy"
-          className="input-field"
-          placeholderText="Add date"
-          withPortal={isMobile}
+          startDate={checkIn}
+          endDate={checkOut}
+          minDate={checkIn || common.minDate}
+          placeholderText="Select date"
+          className="input-field w-full cursor-pointer"
         />
       </div>
     </div>

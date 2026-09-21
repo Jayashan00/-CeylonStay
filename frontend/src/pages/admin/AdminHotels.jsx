@@ -4,104 +4,13 @@ import api from '../../api/client.js'
 import Loader from '../../components/Loader.jsx'
 import ConfirmDialog from '../../components/ConfirmDialog.jsx'
 
-const STATUS_STYLES = {
-  PENDING: 'bg-amber-100 text-amber-700',
-  APPROVED: 'bg-green-100 text-green-700',
-  REJECTED: 'bg-red-100 text-red-700',
-  SUSPENDED: 'bg-slate-200 text-slate-600',
-}
-
-export default function AdminHotels() {
-  const [hotels, setHotels] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('ALL')
-  const [deleteTarget, setDeleteTarget] = useState(null)
-  const [error, setError] = useState('')
-
-  function load() {
-    setLoading(true)
-    api.get('/admin/hotels').then((res) => setHotels(res.data)).finally(() => setLoading(false))
-  }
-
-  useEffect(() => { load() }, [])
-
-  async function setStatus(id, status) {
-    setError('')
-    try {
-      await api.put(`/admin/hotels/${id}/status`, { status })
-      load()
-    } catch (err) {
-      setError(err.response?.data?.message || 'Could not update this property\'s status.')
-    }
-  }
-
-  async function confirmDelete() {
-    setError('')
-    try {
-      await api.delete(`/admin/hotels/${deleteTarget}`)
-      setDeleteTarget(null)
-      load()
-    } catch (err) {
-      setDeleteTarget(null)
-      setError(err.response?.data?.message || 'Could not delete this property.')
-    }
-  }
-
-  if (loading) return <Loader />
-
-  const filtered = filter === 'ALL' ? hotels : hotels.filter((h) => h.status === filter)
-
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      <Link to="/admin" className="text-primary text-sm hover:underline">← Back to dashboard</Link>
-      <div className="flex items-center justify-between mt-2 mb-6 flex-wrap gap-3">
-        <h1 className="font-display font-bold text-2xl">All properties ({hotels.length})</h1>
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="input-field w-48 text-sm">
-          <option value="ALL">All statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="APPROVED">Approved</option>
-          <option value="REJECTED">Rejected</option>
-          <option value="SUSPENDED">Suspended</option>
-        </select>
-      </div>
-
-      {error && (
-        <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-          {error}
-        </div>
-      )}
-
-      <div className="grid gap-3 mt-4">
-        {filtered.map((h) => (
-          <div key={h.id} className="card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex gap-3 items-center">
-              <img src={h.images?.[0]} className="w-20 h-16 object-cover rounded-lg" alt="" />
-              <div>
-                <p className="font-semibold">{h.name}</p>
-                <p className="text-sm text-slate-500">{h.city}, {h.district} · Rs {h.lowestPrice?.toLocaleString() || 0}/night</p>
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[h.status]}`}>{h.status}</span>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {h.status !== 'APPROVED' && <button onClick={() => setStatus(h.id, 'APPROVED')} className="btn-primary text-sm py-1.5 px-3">Approve</button>}
-              {h.status !== 'SUSPENDED' && h.status === 'APPROVED' && <button onClick={() => setStatus(h.id, 'SUSPENDED')} className="btn-outline text-sm py-1.5 px-3">Suspend</button>}
-              {h.status !== 'REJECTED' && <button onClick={() => setStatus(h.id, 'REJECTED')} className="text-sm py-1.5 px-3 rounded-lg border border-amber-200 text-amber-700 hover:bg-amber-50 font-semibold">Reject</button>}
-              <button onClick={() => setDeleteTarget(h.id)} className="text-sm py-1.5 px-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 font-semibold">Delete</button>
-            </div>
-          </div>
-        ))}
-        {filtered.length === 0 && <p className="text-slate-500 card p-6 text-center">No properties in this category.</p>}
-      </div>
-
-      <ConfirmDialog
-        open={!!deleteTarget}
-        title="Permanently delete this property?"
-        message="This removes the property and all its rooms from the platform."
-        confirmLabel="Delete permanently"
-        danger
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteTarget(null)}
-      />
-    </div>
-  )
+const STATUS_STYLES={PENDING:'bg-amber-100 text-amber-700',APPROVED:'bg-green-100 text-green-700',REJECTED:'bg-red-100 text-red-700',SUSPENDED:'bg-slate-200 text-slate-700'}
+export default function AdminHotels(){
+ const [hotels,setHotels]=useState([]);const [loading,setLoading]=useState(true);const [filter,setFilter]=useState('ALL');const [deleteTarget,setDeleteTarget]=useState(null);const [error,setError]=useState('')
+ function load(){setLoading(true);api.get('/admin/hotels').then(r=>setHotels(r.data)).catch(e=>setError(e.response?.data?.message||'Could not load properties.')).finally(()=>setLoading(false))}
+ useEffect(()=>{load()},[])
+ async function status(id,status){setError('');try{await api.put(`/admin/hotels/${id}/status`,{status});load()}catch(e){setError(e.response?.data?.message||'Could not update status.')}}
+ async function remove(){setError('');try{await api.delete(`/admin/hotels/${deleteTarget}?force=1`);setDeleteTarget(null);load()}catch(e){setDeleteTarget(null);setError(e.response?.data?.message||'Could not delete property.')}}
+ if(loading)return <Loader/>;const filtered=filter==='ALL'?hotels:hotels.filter(h=>h.status===filter)
+ return <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10"><Link to="/admin" className="text-primary text-sm hover:underline">← Back to dashboard</Link><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-2 mb-5"><h1 className="font-display font-bold text-2xl">All properties ({hotels.length})</h1><select value={filter} onChange={e=>setFilter(e.target.value)} className="input-field sm:w-52"><option value="ALL">All statuses</option><option value="PENDING">Pending</option><option value="APPROVED">Approved</option><option value="SUSPENDED">Suspended</option><option value="REJECTED">Rejected</option></select></div>{error&&<p className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{error}</p>}<div className="space-y-3">{filtered.map(h=><div key={h.id} className="card p-4"><div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between"><div className="flex gap-3 min-w-0"><img src={h.images?.[0]} className="w-24 h-20 object-cover rounded-lg shrink-0" alt=""/><div className="min-w-0"><p className="font-semibold truncate">{h.name}</p><p className="text-sm text-slate-500">{h.city}, {h.district} · Rs {Number(h.lowestPrice||0).toLocaleString()}/night</p><span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[h.status]}`}>{h.status}</span></div></div><div className="flex flex-wrap gap-2"><Link to={`/owner/hotels/${h.id}/edit`} className="btn-outline text-sm py-2">Edit property</Link><Link to={`/owner/hotels/${h.id}/rooms`} className="btn-outline text-sm py-2">Rooms</Link>{h.status!=='APPROVED'&&<button onClick={()=>status(h.id,'APPROVED')} className="btn-primary text-sm py-2">Approve</button>}{h.status==='APPROVED'&&<button onClick={()=>status(h.id,'SUSPENDED')} className="text-sm py-2 px-3 rounded-lg border border-amber-200 text-amber-700 font-semibold">Suspend</button>}{h.status==='SUSPENDED'&&<button onClick={()=>status(h.id,'APPROVED')} className="btn-primary text-sm py-2">Unsuspend</button>}{h.status!=='REJECTED'&&<button onClick={()=>status(h.id,'REJECTED')} className="text-sm py-2 px-3 rounded-lg border border-red-200 text-red-600 font-semibold">Reject</button>}<button onClick={()=>setDeleteTarget(h.id)} className="text-sm py-2 px-3 rounded-lg border border-red-300 text-red-700 font-semibold">Force delete</button></div></div></div>)}{!filtered.length&&<div className="card p-8 text-center text-slate-500">No properties in this category.</div>}</div><ConfirmDialog open={!!deleteTarget} title="Force delete this property?" message="This permanently deletes the property, its rooms and associated booking/payment/review records. This cannot be undone." confirmLabel="Delete permanently" danger onConfirm={remove} onCancel={()=>setDeleteTarget(null)}/></div>
 }

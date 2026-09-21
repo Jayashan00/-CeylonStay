@@ -51,23 +51,18 @@ export default function Login() {
 
   function redirectByRole(role) {
     const from = location.state?.from
-    if (from) {
-      // Send them straight back to the page they were on (e.g. the booking
-      // details form) with its original state restored, instead of the
-      // homepage — so they never have to search for the hotel again.
-      return navigate(from, { state: location.state?.fromState, replace: true })
-    }
+    if (from) return navigate(from, { state: location.state?.fromState, replace: true })
     if (role === 'ADMIN') return navigate('/admin')
     if (role === 'REGION_ADMIN') return navigate('/admin/hotels')
     if (role === 'HOTEL_OWNER') return navigate('/owner')
-    return navigate('/') // guests land on the homepage, not a dashboard
+    return navigate('/')
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <div className="card p-8">
+    <div className="max-w-md mx-auto px-4 py-8 sm:py-16">
+      <div className="card p-5 sm:p-8">
         <h1 className="font-display font-bold text-2xl mb-1">Sign in</h1>
-        <p className="text-slate-500 text-sm mb-6">Access your CeylonStay account</p>
+        <p className="text-slate-500 text-sm mb-6">Access your Official Direct Booking Platform account</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="email" required placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} className="input-field" />
@@ -86,11 +81,13 @@ export default function Login() {
           <GoogleSignInButton onCredential={handleGoogleCredential} />
           <FacebookSignInButton onAccessToken={handleFacebookToken} label="Continue with Facebook" />
         </div>
+
         {googleError && <p className="text-red-600 text-sm text-center mt-2">{googleError}</p>}
         {facebookError && <p className="text-red-600 text-sm text-center mt-2">{facebookError}</p>}
 
         <p className="text-sm text-slate-500 mt-6 text-center">
-          New to CeylonStay? <Link to="/register" state={location.state} className="text-primary font-medium hover:underline">Create an account</Link>
+          New to Official Direct Booking Platform?{' '}
+          <Link to="/register" state={location.state} className="text-primary font-medium hover:underline">Create an account</Link>
         </p>
       </div>
     </div>
