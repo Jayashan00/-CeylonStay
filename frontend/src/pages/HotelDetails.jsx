@@ -280,7 +280,7 @@ export default function HotelDetails() {
 
   const hotelImages = hotel?.images?.filter(Boolean) || []
 
-  function proceed(room) {
+  function proceed(room, guestDetails = null) {
     const draft = {
       hotelId: id,
       hotelSlug: hotel.slug || id,
@@ -296,9 +296,19 @@ export default function HotelDetails() {
       adults,
       children,
       numberOfRooms: 1,
+      ...(guestDetails || {}),
     }
 
     sessionStorage.setItem('ceylonstay_booking_draft', JSON.stringify(draft))
+
+    // New guests have already completed account creation in the booking gate,
+    // so take them directly to the confirmation/review screen. Logged-in
+    // guests keep the existing details step.
+    if (guestDetails) {
+      navigate(`/book/${room.id}/review`, { state: draft })
+      return
+    }
+
     navigate(`/book/${room.id}`, { state: draft })
   }
 
@@ -541,7 +551,7 @@ export default function HotelDetails() {
       {showAuthGate && pendingRoom && (
         <BookingAuthGate
           onClose={() => { setShowAuthGate(false); setPendingRoom(null) }}
-          onSuccess={() => { setShowAuthGate(false); const room = pendingRoom; setPendingRoom(null); proceed(room) }}
+          onSuccess={(guestDetails) => { setShowAuthGate(false); const room = pendingRoom; setPendingRoom(null); proceed(room, guestDetails) }}
         />
       )}
     </div>

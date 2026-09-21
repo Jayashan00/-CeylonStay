@@ -4,107 +4,218 @@ import GoogleSignInButton from './GoogleSignInButton.jsx'
 import FacebookSignInButton from './FacebookSignInButton.jsx'
 
 /**
- * A compact sign-in/create-account modal shown right at the moment a guest
- * clicks "Reserve" without being logged in — so booking a room never
- * bounces them away to a separate page. Supports the site's normal
- * email+password login/register AND "Continue with Google" (which skips
- * the password step entirely and logs them straight in).
+ * Booking-first account creation.
+ *
+ * Guests who are not signed in should not have to leave the booking flow or
+ * choose between "sign in" and "create account" before they can continue.
+ * This step creates the guest account as part of the reservation flow and
+ * immediately hands the guest back to the booking confirmation/review page.
  */
 export default function BookingAuthGate({ onSuccess, onClose }) {
-  const { login, register, loginWithGoogle, loginWithFacebook } = useAuth()
-  const [mode, setMode] = useState('login') // 'login' | 'register'
+  const { register, loginWithGoogle, loginWithFacebook } = useAuth()
 
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  function guestDetails(fullName, fallbackEmail = email, fallbackPhone = phone) {
+    return {
+      guestFullName: (fullName || `${firstName} ${lastName}`).trim(),
+      guestEmail: (fallbackEmail || email).trim(),
+      guestPhone: (fallbackPhone || phone).trim(),
+    }
+  }
+
   async function handleGoogleCredential(idToken) {
     setError('')
+    setLoading(true)
     try {
-      await loginWithGoogle(idToken)
-      onSuccess()
+      const data = await loginWithGoogle(idToken)
+      onSuccess(guestDetails(data.fullName, data.email, data.phone || ''))
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not sign in with Google. Please try again.')
+      setError(err.response?.data?.message || 'Could not continue with Google. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
   async function handleFacebookToken(accessToken) {
     setError('')
+    setLoading(true)
     try {
-      await loginWithFacebook(accessToken)
-      onSuccess()
+      const data = await loginWithFacebook(accessToken)
+      onSuccess(guestDetails(data.fullName, data.email, data.phone || ''))
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not sign in with Facebook. Please try again.')
+      setError(err.response?.data?.message || 'Could not continue with Facebook. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+
+    if (!firstName.trim() || !lastName.trim()) {
+      setError('Please enter your first name and last name.')
+      return
+    }
+
+    if (!phone.trim()) {
+      setError('Please enter your telephone number.')
+      return
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.')
+      return
+    }
+
     setLoading(true)
     try {
-      if (mode === 'login') {
-        await login(email, password)
-      } else {
-        if (!fullName.trim()) { setError('Please enter your full name.'); setLoading(false); return }
-        await register({ fullName, email, phone, password, role: 'GUEST' })
-      }
-      onSuccess()
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
+      const data = await register({
+        fullName,
+        email: email.trim(),
+        phone: phone.trim(),
+        password,
+        role: 'GUEST',
+      })
+
+      onSuccess({
+        guestFullName: fullName,
+        guestEmail: data.email || email.trim(),
+        guestPhone: phone.trim(),
+      })
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong. Please try again.')
+      setError(err.response?.data?.message || 'Could not create your account. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-[1000] overflow-y-auto p-4">
-      <div className="bg-white rounded-xl shadow-cardHover max-w-md w-full p-6 my-8 mx-auto relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+    <div className="fixed inset-0 bg-black/45 z-[1000] overflow-y-auto p-3 sm:p-4 flex items-start sm:items-center justify-center">
+      <div className="bg-white rounded-2xl shadow-cardHover max-w-md w-full p-5 sm:p-6 my-3 sm:my-8 relative max-h-[calc(100dvh-24px)] sm:max-h-[calc(100dvh-64px)] overflow-y-auto">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={loading}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl leading-none disabled:opacity-50"
+          aria-label="Close"
+        >×</button>
 
-        <h3 className="font-display font-bold text-xl mb-1">
-          {mode === 'login' ? 'Sign in to reserve' : 'Create an account to reserve'}
-        </h3>
-        <p className="text-slate-500 text-sm mb-5">Just one quick step, then straight back to your booking.</p>
+        <div className="pr-8">
+          <h3 className="font-display font-bold text-xl sm:text-2xl mb-1">
+            Reserve your room
+          </h3>
+          <p className="text-slate-500 text-sm leading-5 mb-5">
+            Enter your details to continue to confirmation.
+          </p>
+        </div>
 
         <div className="space-y-2">
-          <GoogleSignInButton onCredential={handleGoogleCredential} text={mode === 'login' ? 'signin_with' : 'signup_with'} />
-          <FacebookSignInButton onAccessToken={handleFacebookToken} label={mode === 'login' ? 'Continue with Facebook' : 'Sign up with Facebook'} />
+          <GoogleSignInButton
+            onCredential={handleGoogleCredential}
+            text="continue_with"
+          />
+          <FacebookSignInButton
+            onAccessToken={handleFacebookToken}
+            label="Continue with Facebook"
+          />
         </div>
 
         <div className="flex items-center gap-3 my-5">
           <div className="flex-1 h-px bg-slate-200" />
-          <span className="text-xs text-slate-400">OR USE EMAIL & PASSWORD</span>
+          <span className="text-[11px] sm:text-xs text-slate-400 whitespace-nowrap">OR CREATE WITH EMAIL</span>
           <div className="flex-1 h-px bg-slate-200" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          {mode === 'register' && (
-            <>
-              <input required placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="input-field text-sm" />
-              <input placeholder="Phone number (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} className="input-field text-sm" />
-            </>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">First name</label>
+              <input
+                required
+                autoComplete="given-name"
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Last name</label>
+              <input
+                required
+                autoComplete="family-name"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="input-field text-sm"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">Email address</label>
+            <input
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-field text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">Telephone number</label>
+            <input
+              type="tel"
+              required
+              autoComplete="tel"
+              placeholder="+94 7X XXX XXXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="input-field text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">Password</label>
+            <input
+              type="password"
+              required
+              minLength={6}
+              autoComplete="new-password"
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field text-sm"
+            />
+          </div>
+
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </div>
           )}
-          <input type="email" required placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} className="input-field text-sm" />
-          <input type="password" required minLength={mode === 'register' ? 6 : undefined} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="input-field text-sm" />
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-
-          <button disabled={loading} className="btn-primary w-full">
-            {loading ? 'Please wait...' : mode === 'login' ? 'Sign in & continue' : 'Create account & continue'}
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full py-3 text-sm sm:text-base"
+          >
+            {loading ? 'Reserving...' : 'Reserve room'}
           </button>
         </form>
 
-        <p className="text-sm text-slate-500 mt-4 text-center">
-          {mode === 'login' ? (
-            <>New here? <button onClick={() => { setMode('register'); setError('') }} className="text-primary font-medium hover:underline">Create an account</button></>
-          ) : (
-            <>Already have an account? <button onClick={() => { setMode('login'); setError('') }} className="text-primary font-medium hover:underline">Sign in</button></>
-          )}
-        </p>
       </div>
     </div>
   )
