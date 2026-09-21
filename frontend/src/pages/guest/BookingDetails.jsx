@@ -41,9 +41,8 @@ export default function BookingDetails() {
     loadDraft(location.state, roomId)
   )
 
-  const [guestFullName, setGuestFullName] = useState(
-    user?.fullName || ''
-  )
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
 
   const [guestEmail, setGuestEmail] = useState(
     user?.email || ''
@@ -128,7 +127,13 @@ export default function BookingDetails() {
     if (!draft) return
 
     if (draft.guestFullName) {
-      setGuestFullName(draft.guestFullName)
+      const parts = draft.guestFullName.trim().split(/\s+/)
+      setFirstName(parts.shift() || '')
+      setLastName(parts.join(' '))
+    } else if (user?.fullName) {
+      const parts = user.fullName.trim().split(/\s+/)
+      setFirstName(parts.shift() || '')
+      setLastName(parts.join(' '))
     }
 
     if (draft.guestEmail) {
@@ -173,9 +178,9 @@ export default function BookingDetails() {
     e.preventDefault()
     setError('')
 
-    if (!guestFullName.trim() || !guestEmail.trim()) {
+    if (!firstName.trim() || !lastName.trim() || !guestEmail.trim()) {
       setError(
-        'Please enter the guest name and a valid email — this is who the confirmation goes to.'
+        'Please enter your first name, last name and a valid email — this is who the confirmation goes to.'
       )
       return
     }
@@ -189,7 +194,7 @@ export default function BookingDetails() {
 
     const updated = {
       ...draft,
-      guestFullName: guestFullName.trim(),
+      guestFullName: `${firstName.trim()} ${lastName.trim()}`.trim(),
       guestEmail: guestEmail.trim(),
       guestPhone: guestPhone.trim(),
       specialRequests: specialRequests.trim(),
@@ -246,20 +251,29 @@ export default function BookingDetails() {
           onSubmit={handleContinue}
           className="lg:col-span-2 card p-6 space-y-4"
         >
-          <div>
-            <label className="text-sm font-medium mb-1 block">
-              Full name
-            </label>
-
-            <input
-              value={guestFullName}
-              onChange={(e) =>
-                setGuestFullName(e.target.value)
-              }
-              placeholder="As it appears on your ID"
-              className="input-field"
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-medium mb-1 block">First name</label>
+              <input
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="First name"
+                autoComplete="given-name"
+                className="input-field"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Last name</label>
+              <input
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Last name"
+                autoComplete="family-name"
+                className="input-field"
+                required
+              />
+            </div>
           </div>
 
           <div>
@@ -286,10 +300,7 @@ export default function BookingDetails() {
 
           <div>
             <label className="text-sm font-medium mb-1 block">
-              Phone number{' '}
-              <span className="text-slate-400 font-normal">
-                (optional)
-              </span>
+              Telephone number
             </label>
 
             <input
@@ -298,7 +309,9 @@ export default function BookingDetails() {
                 setGuestPhone(e.target.value)
               }
               placeholder="+94 7X XXX XXXX"
+              autoComplete="tel"
               className="input-field"
+              required
             />
           </div>
 
